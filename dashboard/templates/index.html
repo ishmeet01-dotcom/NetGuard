@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetGuard — Enterprise Security Operations Center (SOC)</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/responsive.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="brand" data-view="view-overview">
+          <div class="brand-icon">
+            <i data-lucide="shield-alert" style="width:18px;height:18px;"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">NETGUARD</span>
+            <span class="brand-subtitle">Enterprise SOC NIDS</span>
+          </div>
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Operations</div>
+        <a class="nav-item active" data-view="view-overview">
+          <i data-lucide="layout-dashboard" class="nav-icon"></i>
+          <span class="nav-label">Overview</span>
+        </a>
+        <a class="nav-item" data-view="view-monitoring">
+          <i data-lucide="radar" class="nav-icon"></i>
+          <span class="nav-label">Live Monitoring</span>
+          <span id="nav-badge-monitoring" class="nav-badge">IDLE</span>
+        </a>
+        <a class="nav-item" data-view="view-traffic">
+          <i data-lucide="network" class="nav-icon"></i>
+          <span class="nav-label">Network Traffic</span>
+        </a>
+
+        <div class="nav-section-label">Security & Intelligence</div>
+        <a class="nav-item" data-view="view-threats">
+          <i data-lucide="crosshair" class="nav-icon"></i>
+          <span class="nav-label">Threat Intelligence</span>
+        </a>
+        <a class="nav-item" data-view="view-alerts">
+          <i data-lucide="bell-ring" class="nav-icon"></i>
+          <span class="nav-label">Alert Management</span>
+        </a>
+        <a class="nav-item" data-view="view-hosts">
+          <i data-lucide="server" class="nav-icon"></i>
+          <span class="nav-label">Host Monitoring</span>
+        </a>
+
+        <div class="nav-section-label">Analysis & Diagnostics</div>
+        <a class="nav-item" data-view="view-pcap">
+          <i data-lucide="file-up" class="nav-icon"></i>
+          <span class="nav-label">PCAP Analyzer</span>
+        </a>
+        <a class="nav-item" data-view="view-health">
+          <i data-lucide="cpu" class="nav-icon"></i>
+          <span class="nav-label">System Health</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="engine-status-card">
+          <div class="engine-info">
+            <span class="engine-label">Engine State</span>
+            <span id="sidebar-engine-state" class="engine-state">Standby (Opt-in)</span>
+          </div>
+          <span id="sidebar-engine-dot" class="status-dot standby"></span>
+        </div>
+        <div class="app-meta">
+          <span>NetGuard NIDS v1.0</span>
+          <span>Port 5000</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="btn-mobile-nav-toggle" class="mobile-nav-toggle" aria-label="Toggle navigation">
+            <i data-lucide="menu" style="width:18px;height:18px;"></i>
+          </button>
+          <div class="breadcrumb-area">
+            <span class="breadcrumb-root">NetGuard</span>
+            <span class="breadcrumb-separator">/</span>
+            <span id="breadcrumb-current" class="breadcrumb-current">Overview Dashboard</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div id="topbar-monitor-pill" class="indicator-pill idle">
+            <span class="status-dot standby"></span>
+            <span>MONITOR IDLE</span>
+          </div>
+
+          <div id="system-clock" class="system-clock">--:--:-- UTC</div>
+
+          <button id="btn-global-refresh" class="btn btn-secondary btn-icon-only" title="Refresh Current View">
+            <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Views Viewport Host -->
+      <main class="views-viewport">
+
+        <!-- ============================================================== -->
+        <!-- VIEW 1: OVERVIEW DASHBOARD -->
+        <!-- ============================================================== -->
+        <section id="view-overview" class="content-view active-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Security Operations Overview</h1>
+              <p class="view-header-desc">Real-time network telemetry, protocol distributions, and threat assessments.</p>
+            </div>
+            <div class="view-actions">
+              <span id="last-updated-text" style="font-size:11px;color:var(--text-muted);">Syncing...</span>
+            </div>
+          </div>
+
+          <!-- KPI Cards Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Total Packets</span>
+                <i data-lucide="layers" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-total-packets" class="kpi-value">0</span>
+              </div>
+              <div class="kpi-subtext">Ingested & Cleaned</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Network Volume</span>
+                <i data-lucide="hard-drive" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-total-bytes" class="kpi-value">0 B</span>
+              </div>
+              <div class="kpi-subtext">Cumulative bytes</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Packets / Sec</span>
+                <i data-lucide="activity" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-pps" class="kpi-value">0</span>
+                <span class="kpi-unit">pps</span>
+              </div>
+              <div class="kpi-subtext">Instantaneous rate</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Active Hosts</span>
+                <i data-lucide="users" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-active-hosts" class="kpi-value">0</span>
+              </div>
+              <div class="kpi-subtext">Unique endpoints</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Security Alerts</span>
+                <i data-lucide="alert-triangle" class="kpi-icon" style="color:var(--color-warning);"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-total-alerts" class="kpi-value">0</span>
+              </div>
+              <div class="kpi-subtext">All severities</div>
+            </div>
+
+            <div class="kpi-card" style="border-left: 3px solid var(--color-critical);">
+              <div class="kpi-top">
+                <span class="kpi-title">Critical Threats</span>
+                <i data-lucide="flame" class="kpi-icon" style="color:var(--color-critical);"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="kpi-critical-alerts" class="kpi-value" style="color:var(--color-critical);">0</span>
+              </div>
+              <div class="kpi-subtext critical-text">Requires immediate triage</div>
+            </div>
+          </div>
+
+          <!-- Charts Row 1: Traffic Timeline & Protocol Distribution -->
+          <div class="charts-grid-3col">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title-area">
+                  <i data-lucide="trending-up" style="width:16px;height:16px;color:var(--accent-primary);"></i>
+                  <span class="panel-title">Network Traffic Rate Timeline</span>
+                </div>
+                <span class="panel-subtitle">PPS & BPS throughput</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart-wrapper">
+                  <canvas id="chart-traffic-timeline"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title-area">
+                  <i data-lucide="pie-chart" style="width:16px;height:16px;color:var(--accent-primary);"></i>
+                  <span class="panel-title">Protocol Distribution</span>
+                </div>
+                <span class="panel-subtitle">L4 & ARP breakdown</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart-wrapper">
+                  <canvas id="chart-protocol-dist"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row 2: Severity Distribution & Top Talkers -->
+          <div class="charts-grid-2col">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title-area">
+                  <i data-lucide="shield-alert" style="width:16px;height:16px;color:var(--color-warning);"></i>
+                  <span class="panel-title">Alert Severity Profile</span>
+                </div>
+                <span class="panel-subtitle">Critical to Low</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart-wrapper-compact">
+                  <canvas id="chart-severity-dist"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title-area">
+                  <i data-lucide="bar-chart-2" style="width:16px;height:16px;color:var(--accent-primary);"></i>
+                  <span class="panel-title">Most Observed Hosts</span>
+                </div>
+                <span class="panel-subtitle">Endpoints with highest packet observation frequency</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart-wrapper-compact">
+                  <canvas id="chart-top-talkers"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Alerts Table Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title-area">
+                <i data-lucide="bell" style="width:16px;height:16px;color:var(--accent-primary);"></i>
+                <span class="panel-title">Recent Security Alerts</span>
+              </div>
+              <span class="panel-subtitle">Click alert row to view investigation dossier</span>
+            </div>
+            <div class="panel-body-flush">
+              <div class="table-responsive">
+                <table class="soc-table">
+                  <thead>
+                    <tr>
+                      <th>Alert ID</th>
+                      <th>Timestamp</th>
+                      <th>Threat Type</th>
+                      <th>Source IP</th>
+                      <th>Target IP</th>
+                      <th>Severity</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-alerts-tbody">
+                    <tr><td colspan="7" class="empty-state">Loading recent alerts...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 2: LIVE MONITORING -->
+        <!-- ============================================================== -->
+        <section id="view-monitoring" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Live Network Monitoring</h1>
+              <p class="view-header-desc">Control Scapy-based background sniffing engine, configure BPF filters, and inspect real-time metrics.</p>
+            </div>
+          </div>
+
+          <!-- Hero State Banner -->
+          <div class="monitor-status-hero">
+            <div class="monitor-hero-top">
+              <div class="monitor-state-indicator">
+                <span id="monitor-hero-dot" class="status-dot standby" style="width:14px;height:14px;"></span>
+                <div>
+                  <div id="monitor-hero-state" class="monitor-state-title">Monitoring Stopped (Standby)</div>
+                  <div id="monitor-hero-meta" class="monitor-state-meta">Interface: Auto-Detect | Filter: None</div>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;">
+                <button id="btn-start-monitor" class="btn btn-success">
+                  <i data-lucide="play" style="width:16px;height:16px;"></i>
+                  <span>Start Monitoring</span>
+                </button>
+                <button id="btn-stop-monitor" class="btn btn-danger" disabled>
+                  <i data-lucide="square" style="width:16px;height:16px;"></i>
+                  <span>Stop Monitoring</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Real-time Live Metric Boxes -->
+            <div class="monitor-live-grid">
+              <div class="metric-box">
+                <div class="metric-box-title">Capture Uptime</div>
+                <div id="mon-metric-uptime" class="metric-box-value">00:00:00</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">Total Packets</div>
+                <div id="mon-metric-pkts" class="metric-box-value">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">Total Bytes</div>
+                <div id="mon-metric-bytes" class="metric-box-value">0 B</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">Current PPS / BPS</div>
+                <div class="metric-box-value" style="font-size:14px;">
+                  <span id="mon-metric-pps">0</span> pps | <span id="mon-metric-bps">0 B/s</span>
+                </div>
+              </div>
+
+              <div class="metric-box">
+                <div class="metric-box-title">TCP Packets</div>
+                <div id="mon-metric-tcp" class="metric-box-value">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">UDP Packets</div>
+                <div id="mon-metric-udp" class="metric-box-value">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">ICMP Packets</div>
+                <div id="mon-metric-icmp" class="metric-box-value">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">ARP Packets</div>
+                <div id="mon-metric-arp" class="metric-box-value">0</div>
+              </div>
+
+              <div class="metric-box">
+                <div class="metric-box-title">Active Sources</div>
+                <div id="mon-metric-srcs" class="metric-box-value">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">Active Targets</div>
+                <div id="mon-metric-dsts" class="metric-box-value">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">Detected Threats</div>
+                <div id="mon-metric-threats" class="metric-box-value" style="color:var(--color-critical);">0</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-box-title">Queue Status</div>
+                <div id="mon-metric-queue" class="metric-box-value" style="font-size:13px;">0 / 10000</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuration Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Capture Adapter & BPF Filter Configuration</span>
+            </div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:16px;">
+              <div class="form-group">
+                <label class="form-label" for="select-interface">Capture Network Interface</label>
+                <select id="select-interface" class="form-control">
+                  <option value="">Enumerating network adapters...</option>
+                </select>
+                <span style="font-size:11px;color:var(--text-muted);">
+                  Windows Npcap or raw socket interface. Defaults to auto-detecting active gateway adapter.
+                </span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="input-bpf-filter">Berkeley Packet Filter (BPF) Syntax</label>
+                <input id="input-bpf-filter" type="text" class="form-control form-control-mono" placeholder="e.g. tcp, udp, port 80, host 192.168.1.1">
+                <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+                  <span style="font-size:11px;color:var(--text-muted);">Quick Presets:</span>
+                  <button type="button" class="badge badge-proto bpf-example-pill" data-filter="tcp">tcp</button>
+                  <button type="button" class="badge badge-proto bpf-example-pill" data-filter="udp">udp</button>
+                  <button type="button" class="badge badge-proto bpf-example-pill" data-filter="icmp">icmp</button>
+                  <button type="button" class="badge badge-proto bpf-example-pill" data-filter="port 80 or port 443">port 80 or 443</button>
+                  <button type="button" class="badge badge-proto bpf-example-pill" data-filter="not broadcast and not multicast">unicast only</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 3: NETWORK TRAFFIC -->
+        <!-- ============================================================== -->
+        <section id="view-traffic" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Network Traffic Records</h1>
+              <p class="view-header-desc">Browse, filter, and inspect ingested network frames with protocol attributes and TCP flags.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <!-- Filter Toolbar -->
+            <div class="filter-bar">
+              <div class="filter-group">
+                <select id="filter-traffic-protocol" class="form-control filter-input">
+                  <option value="">All Protocols</option>
+                  <option value="TCP">TCP</option>
+                  <option value="UDP">UDP</option>
+                  <option value="ICMP">ICMP</option>
+                  <option value="ARP">ARP</option>
+                </select>
+                <input id="filter-traffic-src" type="text" class="form-control form-control-mono filter-input" placeholder="Source IP...">
+                <input id="filter-traffic-dst" type="text" class="form-control form-control-mono filter-input" placeholder="Destination IP...">
+                <button id="btn-apply-traffic-filters" class="btn btn-primary btn-sm">Filter</button>
+                <button id="btn-clear-traffic-filters" class="btn btn-secondary btn-sm">Clear</button>
+              </div>
+
+              <div class="filter-group">
+                <span style="font-size:11px;color:var(--text-muted);">Rows:</span>
+                <select id="select-traffic-limit" class="form-control" style="padding:4px 8px;font-size:11px;">
+                  <option value="25">25</option>
+                  <option value="50" selected>50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table View -->
+            <div class="panel-body-flush">
+              <div class="table-responsive">
+                <table class="soc-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Source IP</th>
+                      <th>Src Port</th>
+                      <th>Destination IP</th>
+                      <th>Dst Port</th>
+                      <th>Protocol</th>
+                      <th>Packet Size</th>
+                      <th>TCP Flags</th>
+                    </tr>
+                  </thead>
+                  <tbody id="traffic-tbody">
+                    <tr><td colspan="8" class="empty-state">Loading traffic records...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-bar">
+              <span id="traffic-pagination-info">0 records</span>
+              <div class="pagination-controls">
+                <button id="btn-traffic-prev" class="btn btn-secondary btn-sm" disabled>Previous</button>
+                <button id="btn-traffic-next" class="btn btn-secondary btn-sm" disabled>Next</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 4: THREAT INTELLIGENCE -->
+        <!-- ============================================================== -->
+        <section id="view-threats" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Threat Intelligence & Anomaly Matrix</h1>
+              <p class="view-header-desc">Rule Engine detections, volumetric flood signatures, and statistical deviations.</p>
+            </div>
+          </div>
+
+          <!-- Category Matrix Cards -->
+          <div id="threat-category-cards" class="kpi-grid">
+            <!-- Dynamically populated by threats.js -->
+          </div>
+
+          <!-- Detected Threat Incidents Panel -->
+          <div class="panel">
+            <div class="filter-bar">
+              <div class="filter-group">
+                <select id="filter-threat-type" class="form-control filter-input">
+                  <option value="">All Threat Types</option>
+                  <option value="PORT_SCAN">Port Scan</option>
+                  <option value="SYN_FLOOD">SYN Flood</option>
+                  <option value="UDP_FLOOD">UDP Flood</option>
+                  <option value="ICMP_FLOOD">ICMP Flood</option>
+                  <option value="ARP_ANOMALY">ARP Anomaly</option>
+                  <option value="STATISTICAL_ANOMALY">Statistical Anomaly</option>
+                </select>
+                <select id="filter-threat-sev" class="form-control filter-input">
+                  <option value="">All Severities</option>
+                  <option value="CRITICAL">Critical</option>
+                  <option value="HIGH">High</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="LOW">Low</option>
+                </select>
+                <input id="filter-threat-src" type="text" class="form-control form-control-mono filter-input" placeholder="Suspicious Source IP...">
+                <button id="btn-apply-threat-filters" class="btn btn-primary btn-sm">Filter</button>
+                <button id="btn-clear-threat-filters" class="btn btn-secondary btn-sm">Clear</button>
+              </div>
+            </div>
+
+            <div class="panel-body-flush">
+              <div class="table-responsive">
+                <table class="soc-table">
+                  <thead>
+                    <tr>
+                      <th>Alert ID</th>
+                      <th>Timestamp</th>
+                      <th>Threat Category</th>
+                      <th>Suspicious Source IP</th>
+                      <th>Target IP</th>
+                      <th>Severity</th>
+                      <th>Risk Score</th>
+                    </tr>
+                  </thead>
+                  <tbody id="threats-tbody">
+                    <tr><td colspan="7" class="empty-state">Loading threat matrix...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 5: ALERT MANAGEMENT -->
+        <!-- ============================================================== -->
+        <section id="view-alerts" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Alert Management & Investigation</h1>
+              <p class="view-header-desc">Investigate security incidents, verify risk evidence, and update investigation lifecycle statuses.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="filter-bar">
+              <div class="filter-group">
+                <select id="filter-alert-sev" class="form-control filter-input">
+                  <option value="">All Severities</option>
+                  <option value="CRITICAL">Critical</option>
+                  <option value="HIGH">High</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="LOW">Low</option>
+                </select>
+                <select id="filter-alert-threat" class="form-control filter-input">
+                  <option value="">All Threats</option>
+                  <option value="PORT_SCAN">Port Scan</option>
+                  <option value="SYN_FLOOD">SYN Flood</option>
+                  <option value="UDP_FLOOD">UDP Flood</option>
+                  <option value="ICMP_FLOOD">ICMP Flood</option>
+                  <option value="ARP_ANOMALY">ARP Anomaly</option>
+                  <option value="STATISTICAL_ANOMALY">Statistical Anomaly</option>
+                </select>
+                <select id="filter-alert-status" class="form-control filter-input">
+                  <option value="">All Statuses</option>
+                  <option value="NEW">New</option>
+                  <option value="INVESTIGATING">Investigating</option>
+                  <option value="RESOLVED">Resolved</option>
+                  <option value="FALSE_POSITIVE">False Positive</option>
+                </select>
+                <input id="filter-alert-src" type="text" class="form-control form-control-mono filter-input" placeholder="Source IP...">
+                <input id="filter-alert-dst" type="text" class="form-control form-control-mono filter-input" placeholder="Destination IP...">
+                <button id="btn-apply-alert-filters" class="btn btn-primary btn-sm">Filter</button>
+                <button id="btn-clear-alert-filters" class="btn btn-secondary btn-sm">Clear</button>
+              </div>
+            </div>
+
+            <div class="panel-body-flush">
+              <div class="table-responsive">
+                <table class="soc-table">
+                  <thead>
+                    <tr>
+                      <th>Alert ID</th>
+                      <th>Timestamp</th>
+                      <th>Threat Type</th>
+                      <th>Source IP</th>
+                      <th>Destination IP</th>
+                      <th>Severity</th>
+                      <th>Risk Score</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="alerts-tbody">
+                    <tr><td colspan="8" class="empty-state">Loading security alerts...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="pagination-bar">
+              <span id="alerts-pagination-info">0 alerts</span>
+              <div class="pagination-controls">
+                <button id="btn-alerts-prev" class="btn btn-secondary btn-sm" disabled>Previous</button>
+                <button id="btn-alerts-next" class="btn btn-secondary btn-sm" disabled>Next</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 6: HOST MONITORING -->
+        <!-- ============================================================== -->
+        <section id="view-hosts" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Host Monitoring & Inventory</h1>
+              <p class="view-header-desc">Inventory of active network endpoints observed across packet capture streams.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="filter-bar">
+              <div class="filter-group">
+                <input id="input-search-hosts" type="text" class="form-control form-control-mono filter-input" placeholder="Search IP or MAC..." style="min-width:240px;">
+                <button id="btn-search-hosts" class="btn btn-primary btn-sm">Search</button>
+                <button id="btn-clear-hosts-search" class="btn btn-secondary btn-sm">Clear</button>
+              </div>
+            </div>
+
+            <div class="panel-body-flush">
+              <div class="table-responsive">
+                <table class="soc-table">
+                  <thead>
+                    <tr>
+                      <th>IP Address</th>
+                      <th>MAC Address</th>
+                      <th>Observed Packets</th>
+                      <th>First Seen</th>
+                      <th>Last Seen</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="hosts-tbody">
+                    <tr><td colspan="6" class="empty-state">Loading tracked hosts...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 7: PCAP ANALYZER -->
+        <!-- ============================================================== -->
+        <section id="view-pcap" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">Offline PCAP / PCAPNG Analyzer</h1>
+              <p class="view-header-desc">Upload packet captures for isolated feature extraction, threat detection, and SQLite ingestion.</p>
+            </div>
+          </div>
+
+          <!-- Dropzone Card -->
+          <div class="panel">
+            <div class="panel-body">
+              <div id="pcap-dropzone" class="dropzone">
+                <i data-lucide="upload-cloud" class="dropzone-icon"></i>
+                <div class="dropzone-text">Drag & drop packet capture file here</div>
+                <div class="dropzone-hint">Supports .pcap, .pcapng, and .cap files up to 10 MB in size</div>
+                <input id="input-pcap-file" type="file" accept=".pcap,.pcapng,.cap" style="display:none;">
+                <button type="button" id="btn-browse-pcap" class="btn btn-secondary btn-sm">Browse Local Files</button>
+              </div>
+
+              <!-- Upload Progress Indicator -->
+              <div id="pcap-upload-progress" class="upload-progress-bar">
+                <div id="pcap-progress-fill" class="upload-progress-fill"></div>
+              </div>
+
+              <!-- Selected File Action Bar -->
+              <div id="pcap-selected-file-meta" style="display:none;align-items:center;justify-content:space-between;margin-top:16px;padding:12px;background:var(--bg-panel-secondary);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <i data-lucide="file" style="color:var(--accent-primary);"></i>
+                  <div>
+                    <div id="pcap-selected-filename" class="cell-mono cell-strong">capture.pcap</div>
+                    <div id="pcap-selected-filesize" style="font-size:11px;color:var(--text-muted);">0 B</div>
+                  </div>
+                </div>
+                <button id="btn-start-pcap-upload" class="btn btn-primary" disabled>
+                  <i data-lucide="play" style="width:14px;height:14px;"></i>
+                  <span>Execute Analysis</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analysis Results Panel (Hidden until analysis finishes) -->
+          <div id="pcap-results-panel" class="panel" style="display:none;">
+            <div class="panel-header">
+              <div class="panel-title-area">
+                <i data-lucide="check-circle" style="width:16px;height:16px;color:var(--color-success);"></i>
+                <span class="panel-title">Analysis Dossier: <span id="pcap-res-filename" class="cell-mono">sample.pcap</span></span>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <div class="kpi-grid" style="margin-bottom:16px;">
+                <div class="metric-box">
+                  <div class="metric-box-title">Total Packets</div>
+                  <div id="pcap-res-packets" class="metric-box-value">0</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Capture Duration</div>
+                  <div id="pcap-res-duration" class="metric-box-value">0.00s</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Volume Ingested</div>
+                  <div id="pcap-res-bytes" class="metric-box-value">0 B</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Average PPS</div>
+                  <div id="pcap-res-pps" class="metric-box-value">0 pps</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Threats Identified</div>
+                  <div id="pcap-res-threats" class="metric-box-value" style="color:var(--color-critical);">0</div>
+                </div>
+              </div>
+
+              <div style="margin-bottom:16px;">
+                <span class="detail-label">Protocols Identified:</span>
+                <div id="pcap-res-protocols" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;"></div>
+              </div>
+
+              <div>
+                <span class="detail-label">Security Alerts Generated & Persisted:</span>
+                <div class="table-responsive" style="margin-top:8px;">
+                  <table class="soc-table">
+                    <thead>
+                      <tr>
+                        <th>Alert ID</th>
+                        <th>Threat Category</th>
+                        <th>Source IP</th>
+                        <th>Target IP</th>
+                        <th>Severity</th>
+                        <th>Risk Score</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pcap-alerts-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 8: SYSTEM HEALTH -->
+        <!-- ============================================================== -->
+        <section id="view-health" class="content-view">
+          <div class="view-header">
+            <div>
+              <h1 class="view-header-title">System Health & Diagnostic Telemetry</h1>
+              <p class="view-header-desc">Inspect backend threads, database persistence status, and queue utilization.</p>
+            </div>
+            <div class="view-actions">
+              <button id="btn-refresh-health" class="btn btn-secondary btn-sm">
+                <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i>
+                <span>Refresh Diagnostics</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Component Status Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">REST API Service</span>
+                <span id="health-api-badge" class="status-dot online"></span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="health-api-state" style="font-size:14px;font-weight:700;color:var(--color-success);">Operational</span>
+              </div>
+              <div class="kpi-subtext">Flask 3.x / Python 3.14</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Database Repository</span>
+                <span id="health-db-badge" class="status-dot online"></span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="health-db-state" style="font-size:14px;font-weight:700;color:var(--color-success);">Connected</span>
+              </div>
+              <div id="health-db-records" class="kpi-subtext">SQLite3 thread-safe storage</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Capture Sniffer Worker</span>
+                <span id="health-worker-badge" class="status-dot standby"></span>
+              </div>
+              <div class="kpi-value-row">
+                <span id="health-worker-state" style="font-size:14px;font-weight:700;color:var(--color-warning);">Idle (Standby)</span>
+              </div>
+              <div id="health-worker-meta" class="kpi-subtext">Opt-in monitoring</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-title">Queue Capacity</span>
+                <i data-lucide="database" class="kpi-icon"></i>
+              </div>
+              <div class="kpi-value-row">
+                <span id="health-queue-val" class="kpi-value" style="font-size:18px;">0 / 10000</span>
+              </div>
+              <div style="height:4px;background:var(--bg-panel-secondary);border-radius:2px;overflow:hidden;margin-top:6px;">
+                <div id="health-queue-bar" style="height:100%;width:0%;background:var(--accent-primary);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagnostics Metrics -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Diagnostic Counters</span>
+            </div>
+            <div class="panel-body">
+              <div class="monitor-live-grid">
+                <div class="metric-box">
+                  <div class="metric-box-title">System Uptime</div>
+                  <div id="health-uptime" class="metric-box-value">00:00:00</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Total Packets Evaluated</div>
+                  <div id="health-total-packets" class="metric-box-value">0</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Total Volume Ingested</div>
+                  <div id="health-total-bytes" class="metric-box-value">0 B</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-title">Dropped Packets (Queue Overflow)</div>
+                  <div id="health-dropped-packets" class="metric-box-value" style="color:var(--color-success);">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Internal System Diagnostic Log -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Operational Diagnostic Status</span>
+            </div>
+            <div class="panel-body">
+              <div id="health-last-error" class="evidence-box">No internal errors logged. System operating normally.</div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ALERT DETAIL SLIDEOUT DRAWER -->
+  <!-- ============================================================== -->
+  <div id="alert-drawer-overlay" class="drawer-overlay"></div>
+  <aside id="alert-detail-drawer" class="drawer-panel" aria-label="Alert Details">
+    <div class="drawer-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <i data-lucide="shield-alert" style="color:var(--color-warning);"></i>
+        <span class="modal-title">Alert Investigation Dossier</span>
+      </div>
+      <button id="btn-close-alert-drawer" class="modal-close-btn" aria-label="Close drawer">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="detail-section">
+        <span class="detail-label">Alert Identifier</span>
+        <span id="drawer-alert-id" class="detail-value cell-mono cell-strong">ALT-XXXXXXXXXX</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="detail-section">
+          <span class="detail-label">Threat Category</span>
+          <span id="drawer-threat-type" class="detail-value cell-strong">-</span>
+        </div>
+        <div class="detail-section">
+          <span class="detail-label">Detection Timestamp</span>
+          <span id="drawer-timestamp" class="detail-value cell-mono">-</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="detail-section">
+          <span class="detail-label">Suspicious Source IP</span>
+          <span id="drawer-source" class="detail-value cell-mono">-</span>
+        </div>
+        <div class="detail-section">
+          <span class="detail-label">Target Destination IP</span>
+          <span id="drawer-destination" class="detail-value cell-mono">-</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="detail-section">
+          <span class="detail-label">Assessed Severity</span>
+          <div id="drawer-severity-badge">
+            <span class="badge badge-sev-low">LOW</span>
+          </div>
+        </div>
+        <div class="detail-section">
+          <span class="detail-label">Calculated Risk Score</span>
+          <span id="drawer-risk-score" class="detail-value cell-mono cell-strong">0/100</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <span class="detail-label">Threat Description</span>
+        <div id="drawer-description" class="detail-value" style="font-size:12px;color:var(--text-secondary);">-</div>
+      </div>
+
+      <div class="detail-section">
+        <span class="detail-label">Security Evidence Payload (JSON)</span>
+        <div id="drawer-evidence-json" class="evidence-box">{}</div>
+      </div>
+
+      <div class="detail-section" style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border-color);">
+        <label class="form-label" for="drawer-status-select">Update Investigation Status</label>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <select id="drawer-status-select" class="form-control" style="flex:1;">
+            <option value="NEW">NEW</option>
+            <option value="INVESTIGATING">INVESTIGATING</option>
+            <option value="RESOLVED">RESOLVED</option>
+            <option value="FALSE_POSITIVE">FALSE_POSITIVE</option>
+          </select>
+          <button id="btn-drawer-update-status" class="btn btn-primary btn-sm">Update Status</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CONFIRM STOP MONITORING -->
+  <!-- ============================================================== -->
+  <div id="modal-stop-monitor" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <span class="modal-title">Terminate Live Packet Monitoring?</span>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Cancel">
+          <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to stop active packet capture? Live packet ingestion will halt, the capture buffer will be flushed and saved to SQLite, and final statistics will be retained.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close-trigger">Cancel</button>
+        <button id="btn-modal-confirm-stop" class="btn btn-danger">Confirm & Stop Capture</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Scripts -->
+  <script src="/static/vendor/chart.umd.js"></script>
+  <script src="/static/vendor/lucide.js"></script>
+  <!-- Application Script -->
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

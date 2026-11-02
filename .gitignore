@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.venv*/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs and runtime databases
+logs/*.log
+!logs/.gitkeep
+*.db
+*.sqlite3
+
+# Capture files (allow committed sanitized sample test pcaps, ignore large raw dumps)
+samples/*.pcap
+!samples/.gitkeep
+!samples/sample_test.pcap
+!samples/suspicious_sample.pcap
+
+# OS generated
+.DS_Store
+Thumbs.db

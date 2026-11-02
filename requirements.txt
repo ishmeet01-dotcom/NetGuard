@@ -1,0 +1,12 @@
+# NetGuard - Network Intrusion Detection System
+# Core Dependencies
+scapy>=2.5.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Web Dashboard & REST API
+Flask>=3.0.0
+Werkzeug>=3.0.0
+
+# Testing & Quality Assurance
+pytest>=7.0.0

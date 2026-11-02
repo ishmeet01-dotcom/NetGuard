@@ -1,0 +1,142 @@
+/* ==========================================================================
+   NetGuard Enterprise SOC Dashboard - Responsive Adaptations
+   Mobile Drawers, Breakpoints, Table Layouts
+   ========================================================================== */
+
+/* Tablet & Smaller Screens (< 1024px) */
+@media (max-width: 1024px) {
+  .charts-grid-2col,
+  .charts-grid-3col {
+    grid-template-columns: 1fr;
+  }
+
+  .monitor-control-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .monitor-live-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .drawer-panel {
+    width: 400px;
+  }
+}
+
+/* Mobile Screens (< 768px) */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 260px;
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex;
+  }
+
+  /* Transform sidebar into an off-canvas drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    height: 100vh;
+    box-shadow: var(--shadow-lg);
+    transition: left var(--transition-normal);
+  }
+
+  .sidebar.mobile-open {
+    left: 0;
+  }
+
+  /* Sidebar backdrop on mobile */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 99;
+  }
+
+  .sidebar-backdrop.active {
+    display: block;
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .views-viewport {
+    padding: 16px;
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .kpi-card {
+    padding: 12px;
+  }
+
+  .kpi-value {
+    font-size: 20px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-input {
+    width: 100%;
+  }
+
+  .drawer-panel {
+    width: 100%;
+    right: -100%;
+  }
+
+  .system-clock {
+    display: none;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .view-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* Very Small Mobile (< 480px) */
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .monitor-live-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination-bar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .pagination-controls {
+    justify-content: space-between;
+  }
+}
